@@ -7,6 +7,7 @@ A concurrent TCP port scanner with both a **CLI** and a **REST API** (FastAPI).
 - Scan a range of TCP ports on any host
 - **Concurrent scanning** using `ThreadPoolExecutor` for speed
 - **REST API** with FastAPI (`POST /scan`, `GET /stats`)
+- **Docker support** for containerized deployment
 - **Scan history** saved to `data/scans.json` with `--stats` support
 - **Dual logging** to console and `logs/app.log`
 - Clean, readable terminal output
@@ -127,6 +128,26 @@ Response:
 }
 ```
 
+## Docker
+
+Build the image:
+
+```bash
+docker build -t netscope-python .
+```
+
+Run the container:
+
+```bash
+docker run -p 8081:8081 netscope-python
+```
+
+Open the API docs in your browser:
+
+```
+http://127.0.0.1:8081/docs
+```
+
 ## Configuration
 
 Defaults are defined in `app/config.py`:
@@ -158,6 +179,8 @@ netscope-python/
 │   └── app.log         # Auto-generated log file
 ├── main.py              # CLI entry point
 ├── requirements.txt
+├── Dockerfile
+├── .dockerignore
 ├── README.md
 └── .gitignore
 ```
