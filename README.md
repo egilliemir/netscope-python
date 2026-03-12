@@ -1,17 +1,23 @@
 # Netscope
 
-A concurrent CLI TCP port scanner written in Python (standard library only).
+A concurrent TCP port scanner with both a **CLI** and a **REST API** (FastAPI).
 
 ## Features
 
 - Scan a range of TCP ports on any host
 - **Concurrent scanning** using `ThreadPoolExecutor` for speed
+- **REST API** with FastAPI (`POST /scan`, `GET /stats`)
 - **Scan history** saved to `data/scans.json` with `--stats` support
 - **Dual logging** to console and `logs/app.log`
-- Uses only the Python standard library — no external dependencies
 - Clean, readable terminal output
 
-## Usage
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+## CLI Usage
 
 ```bash
 python main.py --host <target> --start <start_port> --end <end_port>
@@ -76,6 +82,51 @@ Unique hosts: 2
 Total open ports found: 7
 ```
 
+## REST API
+
+Install dependencies first:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the API server:
+
+```bash
+python -m uvicorn app.api:app --reload
+```
+
+The API runs at `http://127.0.0.1:8000` by default.
+Interactive docs are available at `http://127.0.0.1:8000/docs`.
+
+### Endpoints
+
+| Method | Path     | Description                    |
+| ------ | -------- | ------------------------------ |
+| GET    | `/`      | Health check                   |
+| POST   | `/scan`  | Run a port scan                |
+| GET    | `/stats` | View scan history statistics   |
+
+### Example: POST /scan
+
+```bash
+curl -X POST http://127.0.0.1:8000/scan \
+  -H "Content-Type: application/json" \
+  -d '{"host": "127.0.0.1", "start_port": 20, "end_port": 80}'
+```
+
+Response:
+
+```json
+{
+  "timestamp": "2026-03-12T14:00:01.123456+00:00",
+  "host": "127.0.0.1",
+  "start_port": 20,
+  "end_port": 80,
+  "open_ports": [22, 80]
+}
+```
+
 ## Configuration
 
 Defaults are defined in `app/config.py`:
@@ -97,6 +148,7 @@ netscope-python/
 │   ├── config.py       # Configuration constants
 │   ├── utils.py        # Logger setup
 │   ├── storage.py      # Scan persistence & stats
+│   ├── api.py          # FastAPI web interface
 │   └── services.py
 ├── data/
 │   └── scans.json
