@@ -12,3 +12,6 @@ MAX_WORKERS = 100
 
 # Path to the log file
 LOG_FILE = "logs/app.log"
+
+# Path to the scan history file
+SCANS_FILE = "data/scans.json"

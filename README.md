@@ -6,6 +6,7 @@ A concurrent CLI TCP port scanner written in Python (standard library only).
 
 - Scan a range of TCP ports on any host
 - **Concurrent scanning** using `ThreadPoolExecutor` for speed
+- **Scan history** saved to `data/scans.json` with `--stats` support
 - **Dual logging** to console and `logs/app.log`
 - Uses only the Python standard library — no external dependencies
 - Clean, readable terminal output
@@ -54,15 +55,37 @@ Log format:
 2026-03-12 14:05:00 | ERROR    | Port numbers must be between 1 and 65535.
 ```
 
+## Scan History and Statistics
+
+Every scan result is automatically saved to **`data/scans.json`**.
+Each record includes the timestamp, host, port range, and list of open ports.
+
+To view statistics from past scans:
+
+```bash
+python main.py --stats
+```
+
+Example output:
+
+```
+Scan statistics
+---------------
+Total scans: 5
+Unique hosts: 2
+Total open ports found: 7
+```
+
 ## Configuration
 
 Defaults are defined in `app/config.py`:
 
-| Constant          | Default      | Description                        |
-| ----------------- | ------------ | ---------------------------------- |
-| `DEFAULT_TIMEOUT` | `0.5`        | Socket timeout per port (seconds)  |
-| `MAX_WORKERS`     | `100`        | Thread pool size for scanning      |
-| `LOG_FILE`        | `logs/app.log` | Path to the log file             |
+| Constant          | Default          | Description                        |
+| ----------------- | ---------------- | ---------------------------------- |
+| `DEFAULT_TIMEOUT` | `0.5`            | Socket timeout per port (seconds)  |
+| `MAX_WORKERS`     | `100`            | Thread pool size for scanning      |
+| `LOG_FILE`        | `logs/app.log`   | Path to the log file               |
+| `SCANS_FILE`      | `data/scans.json`| Path to the scan history file      |
 
 ## Project Structure
 
@@ -73,8 +96,8 @@ netscope-python/
 │   ├── scanner.py      # Concurrent port scanning logic
 │   ├── config.py       # Configuration constants
 │   ├── utils.py        # Logger setup
-│   ├── services.py
-│   └── storage.py
+│   ├── storage.py      # Scan persistence & stats
+│   └── services.py
 ├── data/
 │   └── scans.json
 ├── tests/

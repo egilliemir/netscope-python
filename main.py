@@ -3,13 +3,16 @@ main.py – CLI entry point for Netscope, a concurrent TCP port scanner.
 
 Usage:
     python main.py --host <target> --start <port> --end <port>
+    python main.py --stats
 """
 
 import argparse
 import sys
 import time
+from datetime import datetime, timezone
 
 from app.scanner import scan_range
+from app.storage import save_scan, get_scan_stats
 from app.utils import setup_logger
 
 # Initialize the project-wide logger
@@ -21,9 +24,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Netscope – A concurrent TCP port scanner."
     )
-    parser.add_argument("--host", required=True, help="Target host (IP or hostname)")
-    parser.add_argument("--start", type=int, required=True, help="Start port (1-65535)")
-    parser.add_argument("--end", type=int, required=True, help="End port (1-65535)")
+    # --stats mode (no scan, just show statistics)
+    parser.add_argument("--stats", action="store_true",
+                        help="Show scan history statistics and exit")
+    # Scan arguments (required only when not using --stats)
+    parser.add_argument("--host", help="Target host (IP or hostname)")
+    parser.add_argument("--start", type=int, help="Start port (1-65535)")
+    parser.add_argument("--end", type=int, help="End port (1-65535)")
     return parser.parse_args()
 
 
@@ -37,8 +44,29 @@ def validate_ports(start: int, end: int) -> None:
         sys.exit(1)
 
 
+def print_stats() -> None:
+    """Print scan history statistics to the terminal."""
+    stats = get_scan_stats()
+    print("Scan statistics")
+    print("---------------")
+    print(f"Total scans: {stats['total_scans']}")
+    print(f"Unique hosts: {stats['unique_hosts']}")
+    print(f"Total open ports found: {stats['total_open_ports_found']}")
+
+
 def main() -> None:
     args = parse_args()
+
+    # If --stats flag is set, show statistics and exit
+    if args.stats:
+        print_stats()
+        return
+
+    # For scanning mode, host/start/end are required
+    if not args.host or args.start is None or args.end is None:
+        logger.error("--host, --start, and --end are required for scanning.")
+        sys.exit(1)
+
     validate_ports(args.start, args.end)
 
     logger.info("Scan started on %s [ports %d-%d]", args.host, args.start, args.end)
@@ -60,6 +88,15 @@ def main() -> None:
     else:
         print("No open ports found in the given range.")
 
+    # Save the scan record to history
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "host": args.host,
+        "start_port": args.start,
+        "end_port": args.end,
+        "open_ports": open_ports,
+    }
+    save_scan(record)
     logger.info("Scan finished: %d open port(s) in %.2fs", len(open_ports), elapsed)
 
 
