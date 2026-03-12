@@ -1,23 +1,63 @@
-# NetScope Python
+# Netscope
 
-NetScope is a Python-based network scanning and analysis tool designed to practice cybersecurity, backend development, and software engineering concepts.
+A simple CLI TCP port scanner written in Python.
 
 ## Features
 
-- Scan target hosts for open ports
-- Save scan results
-- Logging system
-- Modular project structure
-- Future REST API support
+- Scan a range of TCP ports on any host
+- Uses standard-library `socket` - no external dependencies
+- Clean, readable output
 
-## Tech Stack
+## Usage
 
-Python  
-Socket Programming  
-Logging  
-FastAPI (planned)  
-JSON / CSV storage
+```bash
+python main.py --host <target> --start <start_port> --end <end_port>
+```
 
-## Goal
+### Example
 
-This project aims to combine networking, cybersecurity basics, backend engineering, and data handling in one structured Python project.
+```bash
+python main.py --host 127.0.0.1 --start 20 --end 80
+```
+
+### Example Output
+
+```
+Scanning 127.0.0.1 from port 20 to 80...
+
+[OPEN] Port 22
+[OPEN] Port 80
+
+Scan complete: 2 open port(s) found.
+```
+
+If no ports are open:
+
+```
+Scanning 127.0.0.1 from port 20 to 80...
+
+No open ports found in the given range.
+```
+
+## Project Structure
+
+```
+netscope-python/
+├── app/
+│   ├── __init__.py
+│   ├── scanner.py      # Core scanning logic
+│   ├── services.py
+│   ├── storage.py
+│   ├── utils.py
+│   └── config.py
+├── data/
+│   └── scans.json
+├── tests/
+│   └── test_scanner.py
+├── logs/
+│   └── app.log
+├── main.py              # CLI entry point
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
