@@ -37,8 +37,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Install application and test dependencies, including pytest-cov
           pip install -r requirements.txt
 
-      # Step 5: Run the test suite with verbose output; build fails if any test fails
-      - name: Run tests
-        run: python -m pytest -v
+      # Step 5: Run the test suite with coverage; build fails if any test fails
+      - name: Run tests with coverage
+        run: python -m pytest --cov=app --cov-report=term-missing -v
