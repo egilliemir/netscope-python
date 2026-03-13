@@ -73,7 +73,7 @@ def main() -> None:
     start_time = time.time()
 
     try:
-        open_ports = scan_range(args.host, args.start, args.end)
+        results = scan_range(args.host, args.start, args.end)
     except Exception as exc:
         logger.error("Scan failed: %s", exc)
         sys.exit(1)
@@ -81,10 +81,10 @@ def main() -> None:
     elapsed = time.time() - start_time
 
     # Print a clean user-facing summary
-    if open_ports:
-        for port in open_ports:
-            print(f"[OPEN] Port {port}")
-        print(f"\nScan complete: {len(open_ports)} open port(s) found in {elapsed:.2f}s.")
+    if results:
+        for entry in results:
+            print(f"[OPEN] Port {entry['port']}  service: {entry['service']}")
+        print(f"\nScan complete: {len(results)} open port(s) found in {elapsed:.2f}s.")
     else:
         print("No open ports found in the given range.")
 
@@ -94,10 +94,10 @@ def main() -> None:
         "host": args.host,
         "start_port": args.start,
         "end_port": args.end,
-        "open_ports": open_ports,
+        "results": results,
     }
     save_scan(record)
-    logger.info("Scan finished: %d open port(s) in %.2fs", len(open_ports), elapsed)
+    logger.info("Scan finished: %d open port(s) in %.2fs", len(results), elapsed)
 
 
 if __name__ == "__main__":

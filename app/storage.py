@@ -63,7 +63,8 @@ def get_scan_stats() -> dict:
 
     for scan in scans:
         unique_hosts.add(scan.get("host", ""))
-        total_open += len(scan.get("open_ports", []))
+        # Support both new format ("results") and legacy format ("open_ports")
+        total_open += len(scan.get("results", scan.get("open_ports", [])))
 
     return {
         "total_scans": len(scans),

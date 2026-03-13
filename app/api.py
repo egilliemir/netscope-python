@@ -45,13 +45,20 @@ class ScanRequest(BaseModel):
         return v
 
 
+class PortResult(BaseModel):
+    """A single open port with its detected service banner."""
+    port: int
+    status: str
+    service: str
+
+
 class ScanResponse(BaseModel):
     """JSON response returned by POST /scan."""
     timestamp: str
     host: str
     start_port: int
     end_port: int
-    open_ports: list[int]
+    results: list[PortResult]
 
 
 # ---------------------------------------------------------------------------
@@ -67,14 +74,14 @@ def root():
 @app.post("/scan", response_model=ScanResponse)
 def run_scan(request: ScanRequest):
     """Run a TCP port scan and persist the result."""
-    open_ports = scan_range(request.host, request.start_port, request.end_port)
+    results = scan_range(request.host, request.start_port, request.end_port)
 
     record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "host": request.host,
         "start_port": request.start_port,
         "end_port": request.end_port,
-        "open_ports": open_ports,
+        "results": results,
     }
 
     save_scan(record)

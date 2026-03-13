@@ -23,16 +23,22 @@ def test_root():
 # ---------------------------------------------------------------------------
 
 @patch("app.api.save_scan")
-@patch("app.api.scan_range", return_value=[22, 80])
+@patch("app.api.scan_range", return_value=[
+    {"port": 22, "status": "open", "service": "OpenSSH"},
+    {"port": 80, "status": "open", "service": "nginx"},
+])
 def test_scan_success(mock_scan_range, mock_save_scan):
-    """POST /scan returns open ports and persists the record."""
+    """POST /scan returns open port results and persists the record."""
     payload = {"host": "10.0.0.1", "start_port": 20, "end_port": 80}
     response = client.post("/scan", json=payload)
 
     assert response.status_code == 200
     data = response.json()
     assert data["host"] == "10.0.0.1"
-    assert data["open_ports"] == [22, 80]
+    assert data["results"] == [
+        {"port": 22, "status": "open", "service": "OpenSSH"},
+        {"port": 80, "status": "open", "service": "nginx"},
+    ]
     assert "timestamp" in data
     mock_scan_range.assert_called_once_with("10.0.0.1", 20, 80)
     mock_save_scan.assert_called_once()
@@ -41,12 +47,12 @@ def test_scan_success(mock_scan_range, mock_save_scan):
 @patch("app.api.save_scan")
 @patch("app.api.scan_range", return_value=[])
 def test_scan_no_open_ports(mock_scan_range, mock_save_scan):
-    """POST /scan returns an empty list when no ports are open."""
+    """POST /scan returns an empty results list when no ports are open."""
     payload = {"host": "10.0.0.1", "start_port": 100, "end_port": 200}
     response = client.post("/scan", json=payload)
 
     assert response.status_code == 200
-    assert response.json()["open_ports"] == []
+    assert response.json()["results"] == []
 
 
 def test_scan_invalid_port_range():
